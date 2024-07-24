@@ -30,13 +30,9 @@ const Waiting = ({
       });
       socket.on("START", (data: any) => {
         localStorage.setItem("game-data", JSON.stringify(data));
-        router.push("/game");
+        router.push(`/game?room=${tournamentId}`);
       });
     }
-
-    // return () => {
-    //   socketInstance.close();
-    // };
   }, []);
 
   const handleUserJoin = (data: any) => {

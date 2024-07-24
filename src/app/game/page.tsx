@@ -2,7 +2,7 @@
 
 import Box from "@/components/common/box";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
 const Gameplay = () => {
@@ -17,7 +17,10 @@ const Gameplay = () => {
   const [hasEnded, setHasEnded] = useState<boolean>(false);
   const [isDraw, setIsDraw] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
-  const [oponent, setOponent] = useState<string>("");
+  const [opponent, setOpponent] = useState<string>("");
+  const [counter, setCounter] = useState<number>(0);
+
+  const params = useSearchParams().get("room");
 
   useEffect(() => {
     const players = JSON.parse(localStorage.getItem("game-data")!)?.users;
@@ -25,24 +28,30 @@ const Gameplay = () => {
     const [user1, user2] = players;
 
     if (user1 === localStorage.getItem("player")) {
-      setOponent(user2);
+      setOpponent(user2);
     } else {
-      setOponent(user1);
+      setOpponent(user1);
     }
 
     setPlayer1(user1);
     setPlayer2(user2);
-  }, []);
+  }, [counter]);
 
   useEffect(() => {
     const winner = calculateWinner(squares);
     if (winner) {
       const socket = window.GAME_SOCKET?.socket;
       if (socket) {
-        socket.emit("WIN", {
-          winner: winner === "X" ? player1 : player2,
-          loser: winner === "X" ? player2 : player1,
-        });
+        let actualWinner = winner === "X" ? player1 : player2;
+        if (actualWinner === localStorage.getItem("player"))
+          socket.emit("WIN", {
+            winner: winner === "X" ? player1 : player2,
+            loser: winner === "X" ? player2 : player1,
+          });
+        else {
+          socket.close();
+          router.push(`/leaderboard?room=${params}`);
+        }
       }
       setStatus(`Winner: ${winner === "X" ? player1 : player2}`);
       setHasEnded(true);
@@ -67,6 +76,24 @@ const Gameplay = () => {
   useEffect(() => {
     const socket = window.GAME_SOCKET.socket;
     if (socket) {
+      socket.on("START", (data: any) => {
+        localStorage.setItem("game-data", JSON.stringify(data));
+        setSquares(Array(9).fill(null));
+        setIsDraw(false);
+        setHasEnded(false);
+        setIsXNext(true);
+        setCounter(counter + 1);
+      });
+      socket.on("TOURNAMENT-WIN", () => {
+        socket.close();
+        router.push(`/leaderboard?room=${params}`);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const socket = window.GAME_SOCKET.socket;
+    if (socket) {
       socket.on("MOVE", (data: any) => {
         if (data.move) {
           setSquares((prevSquares) =>
@@ -83,6 +110,12 @@ const Gameplay = () => {
   const handleClick = (i: number) => {
     const socket = window.GAME_SOCKET.socket;
 
+    const currentChance = isXNext ? player1 : player2;
+
+    if (currentChance !== localStorage.getItem("player")) {
+      return;
+    }
+
     if (squares[i] || calculateWinner(squares)) {
       return;
     }
@@ -91,7 +124,7 @@ const Gameplay = () => {
       socket.emit("MOVE", {
         tile: i,
         move: isXNext ? "X" : "O",
-        opponentName: oponent,
+        opponentName: opponent,
       });
     }
   };
@@ -123,9 +156,9 @@ const Gameplay = () => {
   return (
     <div className="flex flex-col justify-center items-center h-[100%]">
       <div className="mb-4 text-xl">{status}</div>
-      <div>
+      <div className="flex flex-col gap-1">
         {Array.from({ length: 3 }).map((_, row) => (
-          <div className="flex" key={row}>
+          <div className="flex gap-1" key={row}>
             {Array.from({ length: 3 }).map((_, col) => {
               const index = row * 3 + col;
               return (
