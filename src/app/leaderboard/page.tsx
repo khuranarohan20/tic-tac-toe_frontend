@@ -1,9 +1,9 @@
 import React from "react";
-import LeaderBoardPage from "@/components/common/leaderboard";
+import LeaderBoardPageWrapper from "@/components/common/leaderboard";
 const LeaderBoard = () => {
   return (
     <div>
-      <LeaderBoardPage />
+      <LeaderBoardPageWrapper />
     </div>
   );
 };
