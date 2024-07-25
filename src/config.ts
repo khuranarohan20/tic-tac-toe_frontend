@@ -1,1 +1,1 @@
-export const API = "http://192.168.111.123:3000";
+export const API = "https://server-game-5ks7.onrender.com";
