@@ -19,7 +19,7 @@ const Waiting = ({
 
   useEffect(() => {
     const socketInstance = new GameSocket();
-    window.GAME_SOCKET = socketInstance;
+    (window as any).GAME_SOCKET = socketInstance;
     if (userName && tournamentId) {
       const socket = socketInstance.connect(userName, tournamentId);
       socket.on("USER-JOIN", (data: any) => {

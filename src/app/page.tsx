@@ -31,7 +31,9 @@ export default function Home() {
           disabled={!player}
           onClick={async () => {
             setLoading(true);
-            localStorage.setItem("player", player);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("player", player);
+            }
             router.push("/rooms");
           }}
         >

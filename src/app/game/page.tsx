@@ -23,7 +23,10 @@ const Gameplay = () => {
   const params = useSearchParams().get("room");
 
   useEffect(() => {
-    const players = JSON.parse(localStorage.getItem("game-data")!)?.users;
+    let players;
+    if (typeof window !== "undefined") {
+      players = JSON.parse(localStorage.getItem("game-data")!)?.users;
+    }
 
     const [user1, user2] = players;
 
@@ -40,7 +43,7 @@ const Gameplay = () => {
   useEffect(() => {
     const winner = calculateWinner(squares);
     if (winner) {
-      const socket = window.GAME_SOCKET?.socket;
+      const socket = (window as any).GAME_SOCKET?.socket;
       if (socket) {
         let actualWinner = winner === "X" ? player1 : player2;
         if (actualWinner === localStorage.getItem("player"))
@@ -74,7 +77,7 @@ const Gameplay = () => {
   }, [squares, isXNext]);
 
   useEffect(() => {
-    const socket = window.GAME_SOCKET.socket;
+    const socket = (window as any).GAME_SOCKET.socket;
     if (socket) {
       socket.on("START", (data: any) => {
         localStorage.setItem("game-data", JSON.stringify(data));
@@ -92,7 +95,7 @@ const Gameplay = () => {
   }, []);
 
   useEffect(() => {
-    const socket = window.GAME_SOCKET.socket;
+    const socket = (window as any).GAME_SOCKET.socket;
     if (socket) {
       socket.on("MOVE", (data: any) => {
         if (data.move) {
@@ -108,7 +111,7 @@ const Gameplay = () => {
   }, []);
 
   const handleClick = (i: number) => {
-    const socket = window.GAME_SOCKET.socket;
+    const socket = (window as any).GAME_SOCKET.socket;
 
     const currentChance = isXNext ? player1 : player2;
 

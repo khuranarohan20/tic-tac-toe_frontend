@@ -16,7 +16,10 @@ import { API } from "@/config";
 import Waiting from "@/components/common/Waiting";
 
 const Rooms = () => {
-  const playerName = localStorage.getItem("player");
+  let playerName: string | null = "";
+  if (typeof window !== "undefined") {
+    playerName = localStorage.getItem("player");
+  }
   const [hasJoined, setHasJoined] = useState<boolean>(false);
   const [data, setData] = useState<any[]>([]);
   const [eventId, setEventId] = useState<string>("");
